@@ -106,7 +106,7 @@ void setup() {
 
 void loop() {
   static uint32_t joystick_debounce = 0;
-  static uint16_t imu_scaling_factor = 20860;
+  static uint16_t imu_scaling_factor = 10430;
   
   uint8_t mpuIntStatus = mpu.getIntStatus();
   uint8_t fifo_count = mpu.getFIFOCount();
@@ -118,7 +118,7 @@ void loop() {
 
   if (mode == 1) {
     // in mode 1, use x pot to adjust sensitivity of imu
-    imu_scaling_factor = 20860 / 1024 * analogRead(pot_pins[0]);
+    imu_scaling_factor = 10430 / 1024 * analogRead(pot_pins[0]);
   }
 
   for(uint8_t i = 0; i < NUM_BUTTONS; i++) {
@@ -156,13 +156,21 @@ void loop() {
 
   if (mode == 0) {
     // mode 0: x & y relying on potentiometer, throttle relying on pitch
+    joystick.setXAxisRange(0, 1024);
+    joystick.setYAxisRange(0, 1024);
+    joystick.setThrottleRange(-32768, 32767);
+    
     joystick.setXAxis(analogRead(pot_pins[0]));
     joystick.setYAxis(analogRead(pot_pins[1]));
-    // 20860 converts the (-(pi/2), (pi/2)) value to (-32768, 32768) 
+    // 20860 converts the (-pi, pi) value to (-32768, 32768) 
     joystick.setThrottle(euler[1]*imu_scaling_factor);
   }
   else {
     // mode 1: x and y relying on yaw and pitch respectively, throttle relying on Y pot
+    joystick.setXAxisRange(-32768, 32767);
+    joystick.setYAxisRange(-32768, 32767);
+    joystick.setThrottleRange(0, 1024);
+    
     joystick.setXAxis(euler[0]*imu_scaling_factor);
     joystick.setYAxis(euler[1]*imu_scaling_factor);
     joystick.setThrottle(analogRead(pot_pins[1]));
